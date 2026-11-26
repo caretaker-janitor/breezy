@@ -729,6 +729,15 @@ class TestUrlToPath(TestCase):
                 urlutils.split_segment_parameters_decoded(url),
             )
 
+    def test_segment_parameters_non_utf8_bytes(self):
+        value = b"caf\xe9\xff".decode("utf-8", "surrogateescape")
+        url = urlutils.join_segment_parameters_encoded("/p", {"branch": value})
+        self.assertEqual("/p,branch=caf%E9%FF", url)
+        _, parameters = urlutils.split_segment_parameters_decoded(url)
+        self.assertEqual(
+            b"caf\xe9\xff", parameters["branch"].encode("utf-8", "surrogateescape")
+        )
+
     def test_win32_strip_local_trailing_slash(self):
         strip = urlutils._win32_strip_local_trailing_slash
         self.assertEqual("file://", strip("file://"))

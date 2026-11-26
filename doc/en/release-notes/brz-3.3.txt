@@ -13,7 +13,9 @@ brz 3.3.26
  * Add ``urlutils.join_segment_parameters_encoded`` and
    ``urlutils.split_segment_parameters_decoded``, which encode and decode
    segment parameter values, so a value may hold ``/`` or ``,``. Only the
-   values are encoded. The existing pair is unchanged. (Zainab Mehmut)
+   values are encoded. The existing pair is unchanged. A value that is not
+   valid UTF-8, given as surrogate escapes, comes back unchanged.
+   (Zainab Mehmut)
 
  * github, gitlab: Give the full URL in ``UnexpectedHttpStatus`` for an
    API request. It held only the API path, such as

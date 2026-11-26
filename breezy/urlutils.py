@@ -519,7 +519,13 @@ def split_segment_parameters_decoded(url):
     Returns: (url, segment_parameters)
     """
     (base_url, parameters) = split_segment_parameters(url)
-    return (base_url, {key: unescape(value) for key, value in parameters.items()})
+    return (
+        base_url,
+        {
+            key: unescape(value, errors="surrogateescape")
+            for key, value in parameters.items()
+        },
+    )
 
 
 def strip_segment_parameters(url):
@@ -595,7 +601,9 @@ def join_segment_parameters_encoded(url, parameters):
     return join_segment_parameters(
         url,
         {
-            key: escape(value, safe="") if isinstance(value, str) else value
+            key: escape(value.encode("utf-8", "surrogateescape"), safe="")
+            if isinstance(value, str)
+            else value
             for key, value in parameters.items()
         },
     )
@@ -650,10 +658,11 @@ def strip_trailing_slash(url):
     return url[:-1]
 
 
-def unescape(url):
+def unescape(url, errors="replace"):
     """Unescape relpath from url format.
 
-    This returns a Unicode path from a URL
+    This returns a Unicode path from a URL. Escaped bytes that are not
+    valid UTF-8 are handled as by ``bytes.decode(errors=errors)``.
     """
     # jam 20060427 URLs are supposed to be ASCII only strings
     #       If they are passed in as unicode, unquote
@@ -668,7 +677,7 @@ def unescape(url):
             url.encode("ascii")
         except UnicodeError as e:
             raise InvalidURL(url, "URL was not a plain ASCII url: {}".format(e))
-    return urlparse.unquote(url)
+    return urlparse.unquote(url, errors=errors)
 
 
 # These are characters that if escaped, should stay that way
